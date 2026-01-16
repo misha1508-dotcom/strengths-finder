@@ -1,9 +1,43 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+async function callOpenRouter(prompt: string, maxTokens: number = 4096) {
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      'X-Title': 'Strengths Finder',
+    },
+    body: JSON.stringify({
+      model: 'anthropic/claude-3.5-sonnet',
+      max_tokens: maxTokens,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error('OpenRouter error:', errorData);
+    throw new Error(errorData.error?.message || `OpenRouter API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const textContent = data.choices?.[0]?.message?.content;
+
+  if (!textContent) {
+    throw new Error('No text content in response');
+  }
+
+  return textContent;
+}
 
 const QUALITIES_LIST = `
 Эмоциональные качества (emotional):
@@ -77,23 +111,9 @@ ${situations.map((s: string, i: number) => `${i + 1}. ${s}`).join('\n\n')}
 
 Отвечай только JSON, без дополнительного текста.`;
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+    const textContent = await callOpenRouter(prompt, 4096);
 
-    const textContent = message.content.find((block) => block.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content in response');
-    }
-
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('No JSON found in response');
     }
@@ -104,7 +124,7 @@ ${situations.map((s: string, i: number) => `${i + 1}. ${s}`).join('\n\n')}
   } catch (error) {
     console.error('Error analyzing situations:', error);
     return NextResponse.json(
-      { error: 'Failed to analyze situations' },
+      { error: error instanceof Error ? error.message : 'Failed to analyze situations' },
       { status: 500 }
     );
   }
@@ -140,18 +160,9 @@ ${dualsSummary}
 
 Только JSON, без дополнительного текста.`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const textContent = await callOpenRouter(prompt, 2048);
 
-  const textContent = message.content.find((block) => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text content in response');
-  }
-
-  const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('No JSON found in response');
   }
@@ -183,18 +194,9 @@ async function handleActivities(situations: { text: string; analysis: { qualitie
 
 Только JSON, без дополнительного текста.`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const textContent = await callOpenRouter(prompt, 2048);
 
-  const textContent = message.content.find((block) => block.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
-    throw new Error('No text content in response');
-  }
-
-  const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('No JSON found in response');
   }
