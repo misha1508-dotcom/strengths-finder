@@ -57,6 +57,24 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
           </div>
         </div>
 
+        {/* Important Instructions */}
+        <div className="bg-[var(--mint)]/20 rounded-2xl p-6 border border-[var(--accent)]/20 text-left">
+          <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
+            Важно для точного анализа
+          </h3>
+          <p className="text-[var(--muted)] leading-relaxed">
+            Чтобы получить максимально точный результат, постарайся описать ситуации как можно подробнее.
+            Чем больше ситуаций ты опишешь (рекомендуем 5-10), тем точнее будет анализ твоих качеств.
+            Пиши так, как будто рассказываешь близкому другу — не стесняйся, будь искренним.
+            Можно жаловаться, ныть, описывать свои эмоции и переживания. Не бойся показаться слабым
+            или неправым — именно в таких ситуациях проявляются настоящие качества личности.
+          </p>
+          <p className="text-[var(--muted)] leading-relaxed mt-3">
+            <strong className="text-foreground">Конфиденциальность:</strong> Твои данные обрабатываются
+            только ИИ Anthropic. Никакой человек не имеет к ним доступа. Это полностью безопасно.
+          </p>
+        </div>
+
         {/* How it works */}
         <div className="space-y-4 text-left">
           <h3 className="text-lg font-semibold text-center">Как это работает</h3>
@@ -89,10 +107,6 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
         >
           Начать упражнение
         </button>
-
-        <p className="text-sm text-[var(--muted)]">
-          Можно писать или диктовать голосом
-        </p>
       </div>
     </div>
   );
