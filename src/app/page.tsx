@@ -63,6 +63,10 @@ export default function Home() {
     setStep('intro');
   };
 
+  const handleBack = () => {
+    setStep('intro');
+  };
+
   return (
     <main className="min-h-screen bg-background">
       {step === 'intro' && <IntroScreen onStart={handleStart} />}
@@ -74,6 +78,7 @@ export default function Home() {
           onSituationAdd={handleSituationAdd}
           onComplete={handleAllSituationsComplete}
           canComplete={situations.length >= 5}
+          onBack={handleBack}
         />
       )}
 

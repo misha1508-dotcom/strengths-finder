@@ -8,6 +8,7 @@ interface InputScreenProps {
   onSituationAdd: (text: string) => void;
   onComplete: () => void;
   canComplete: boolean;
+  onBack: () => void;
 }
 
 export default function InputScreen({
@@ -16,7 +17,9 @@ export default function InputScreen({
   onSituationAdd,
   onComplete,
   canComplete,
+  onBack,
 }: InputScreenProps) {
+  const [recordingTime, setRecordingTime] = useState(0);
   const [text, setText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -83,6 +86,7 @@ export default function InputScreen({
     setText('');
     setIsRecording(true);
     setTimeLeft(60);
+    setRecordingTime(0);
 
     try {
       recognitionRef.current.start();
@@ -91,6 +95,7 @@ export default function InputScreen({
     }
 
     timerRef.current = setInterval(() => {
+      setRecordingTime((prev) => prev + 1);
       setTimeLeft((prev) => {
         if (prev <= 1) {
           stopRecording();
@@ -103,6 +108,7 @@ export default function InputScreen({
 
   const stopRecording = () => {
     setIsRecording(false);
+    setRecordingTime(0);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -114,6 +120,12 @@ export default function InputScreen({
         // Ignore errors on stop
       }
     }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleSubmit = () => {
@@ -136,6 +148,17 @@ export default function InputScreen({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 fade-in">
       <div className="w-full max-w-2xl space-y-8">
+        {/* Back button */}
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-[var(--muted)] hover:text-foreground transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Назад
+        </button>
+
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -178,28 +201,60 @@ export default function InputScreen({
             />
 
             {/* Voice Recording */}
-            <div className="flex items-center justify-center gap-4">
-              {speechSupported && (
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className={`flex items-center gap-3 px-6 py-3 rounded-full font-medium transition-all ${
-                    isRecording
-                      ? 'bg-red-500 text-white recording-pulse'
-                      : 'bg-[var(--muted)]/20 hover:bg-[var(--muted)]/30 text-foreground'
-                  }`}
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
+            {speechSupported && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-full font-medium transition-all ${
+                      isRecording
+                        ? 'bg-red-500 text-white recording-pulse'
+                        : 'bg-[var(--muted)]/20 hover:bg-[var(--muted)]/30 text-foreground'
+                    }`}
                   >
-                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z" />
-                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                  </svg>
-                  {isRecording ? `Запись... ${timeLeft}с` : 'Записать голосом'}
-                </button>
-              )}
-            </div>
+                    <svg
+                      className="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z" />
+                      <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                    </svg>
+                    {isRecording ? `Остановить` : 'Записать голосом'}
+                  </button>
+                </div>
+
+                {isRecording && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-red-500 font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                        Запись идёт
+                      </span>
+                      <span className={`font-mono font-bold ${recordingTime > 60 ? 'text-red-500' : 'text-foreground'}`}>
+                        {formatTime(recordingTime)}
+                      </span>
+                    </div>
+                    {text && (
+                      <div className="text-sm text-[var(--muted)] bg-background/50 rounded-lg p-3 max-h-24 overflow-y-auto">
+                        {text}
+                      </div>
+                    )}
+                    {recordingTime > 60 && (
+                      <p className="text-xs text-red-500">
+                        Рекомендуется не более 1 минуты на ситуацию
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {!isRecording && (
+                  <p className="text-xs text-center text-[var(--muted)]">
+                    Рекомендуется не более 1 минуты на ситуацию
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Character count */}
             <div className="text-right text-sm text-[var(--muted)]">

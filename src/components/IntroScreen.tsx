@@ -13,25 +13,28 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">
             Найди свои сильные стороны
           </h1>
-          <p className="text-xl text-[var(--muted)]">
-            Психологическое упражнение для глубокого самопознания
-          </p>
         </div>
 
         {/* Pareto Principle Explanation */}
         <div className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg border border-[var(--muted)]/20">
           <div className="space-y-6">
-            <div className="flex items-center justify-center gap-4">
+            <h2 className="text-xl font-semibold text-center">Принцип Парето в действии</h2>
+
+            <p className="text-[var(--muted)] leading-relaxed text-left">
+              Известно, что <strong className="text-foreground">20% усилий дают 80% результата</strong>.
+            </p>
+
+            <p className="text-[var(--muted)] leading-relaxed text-left">
+              Но если применить этот принцип ещё раз — к этим же 20%?
+            </p>
+
+            <div className="flex items-center justify-center gap-4 py-4">
               <div className="text-5xl font-bold text-[var(--accent)]">4%</div>
               <div className="text-3xl text-[var(--muted)]">→</div>
               <div className="text-5xl font-bold text-[var(--accent-light)]">64%</div>
             </div>
 
-            <div className="space-y-4 text-left">
-              <h2 className="text-xl font-semibold text-center">Принцип Парето в действии</h2>
-              <p className="text-[var(--muted)] leading-relaxed">
-                20% усилий дают 80% результата. Но если применить этот принцип дважды:
-              </p>
+            <div className="space-y-3 text-left">
               <ul className="space-y-2 text-[var(--muted)]">
                 <li className="flex items-start gap-2">
                   <span className="text-[var(--accent)] font-medium">•</span>
@@ -42,8 +45,11 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
                   <span>80% от 80% = <strong className="text-foreground">64% результата</strong></span>
                 </li>
               </ul>
-              <p className="text-[var(--muted)] leading-relaxed">
-                Это упражнение — те самые 4%, которые могут изменить 64% вашего понимания себя.
+            </div>
+
+            <div className="bg-[var(--accent)]/10 rounded-xl p-4 border border-[var(--accent)]/30">
+              <p className="text-foreground font-medium text-center">
+                Это упражнение — и есть те самые 4% действий, которые дадут тебе 64% понимания себя.
               </p>
             </div>
           </div>
@@ -56,7 +62,7 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
             <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--muted)]/20">
               <div className="text-2xl font-bold text-[var(--accent)] mb-2">1</div>
               <p className="text-sm text-[var(--muted)]">
-                Расскажите о 5-10 ситуациях, где что-то пошло не так
+                Расскажи о 5-10 ситуациях, где что-то пошло не так
               </p>
             </div>
             <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--muted)]/20">
@@ -68,7 +74,7 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
             <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--muted)]/20">
               <div className="text-2xl font-bold text-[var(--accent)] mb-2">3</div>
               <p className="text-sm text-[var(--muted)]">
-                Увидите позитивную сторону каждого качества
+                Увидишь реальные сильные стороны
               </p>
             </div>
           </div>
