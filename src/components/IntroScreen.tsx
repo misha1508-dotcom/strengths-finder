@@ -16,9 +16,11 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
         </div>
 
         {/* Pareto Principle Explanation */}
-        <div className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg border border-[var(--muted)]/20">
+        <div className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg border border-[var(--mint)]/30">
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-center">Принцип Парето в действии</h2>
+            <h2 className="text-xl font-semibold text-center text-[var(--accent-dark)]">
+              Принцип Парето в действии
+            </h2>
 
             <p className="text-[var(--muted)] leading-relaxed text-left">
               Известно, что <strong className="text-foreground">20% усилий дают 80% результата</strong>.
@@ -27,12 +29,6 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
             <p className="text-[var(--muted)] leading-relaxed text-left">
               Но если применить этот принцип ещё раз — к этим же 20%?
             </p>
-
-            <div className="flex items-center justify-center gap-4 py-4">
-              <div className="text-5xl font-bold text-[var(--accent)]">4%</div>
-              <div className="text-3xl text-[var(--muted)]">→</div>
-              <div className="text-5xl font-bold text-[var(--accent-light)]">64%</div>
-            </div>
 
             <div className="space-y-3 text-left">
               <ul className="space-y-2 text-[var(--muted)]">
@@ -47,10 +43,16 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
               </ul>
             </div>
 
-            <div className="bg-[var(--accent)]/10 rounded-xl p-4 border border-[var(--accent)]/30">
-              <p className="text-foreground font-medium text-center">
+            <div className="bg-[var(--mint)]/30 rounded-xl p-5 border border-[var(--accent)]/30">
+              <p className="text-foreground font-semibold text-center text-lg">
                 Это упражнение — и есть те самые 4% действий, которые дадут тебе 64% понимания себя.
               </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-6 pt-2">
+              <div className="text-6xl font-bold text-[var(--accent)]">4%</div>
+              <div className="text-4xl text-[var(--mint-dark)]">→</div>
+              <div className="text-6xl font-bold text-[var(--accent-light)]">64%</div>
             </div>
           </div>
         </div>
@@ -59,19 +61,19 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
         <div className="space-y-4 text-left">
           <h3 className="text-lg font-semibold text-center">Как это работает</h3>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--muted)]/20">
+            <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--mint)]/30">
               <div className="text-2xl font-bold text-[var(--accent)] mb-2">1</div>
               <p className="text-sm text-[var(--muted)]">
                 Расскажи о 5-10 ситуациях, где что-то пошло не так
               </p>
             </div>
-            <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--muted)]/20">
+            <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--mint)]/30">
               <div className="text-2xl font-bold text-[var(--accent)] mb-2">2</div>
               <p className="text-sm text-[var(--muted)]">
                 ИИ найдёт скрытые качества в каждой ситуации
               </p>
             </div>
-            <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--muted)]/20">
+            <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--mint)]/30">
               <div className="text-2xl font-bold text-[var(--accent)] mb-2">3</div>
               <p className="text-sm text-[var(--muted)]">
                 Увидишь реальные сильные стороны
@@ -83,7 +85,7 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
         {/* Start Button */}
         <button
           onClick={onStart}
-          className="w-full md:w-auto px-12 py-4 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full text-lg transition-all hover:scale-105 active:scale-95"
+          className="w-full md:w-auto px-12 py-4 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
         >
           Начать упражнение
         </button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Situation, SituationAnalysis, FeatherInsight, AppStep } from '@/types';
+import { Situation, SituationAnalysis, FeatherInsight, QualityRating, AppStep } from '@/types';
 import IntroScreen from '@/components/IntroScreen';
 import InputScreen from '@/components/InputScreen';
 import ProcessingScreen from '@/components/ProcessingScreen';
@@ -10,7 +10,12 @@ import ResultsScreen from '@/components/ResultsScreen';
 export default function Home() {
   const [step, setStep] = useState<AppStep>('intro');
   const [situations, setSituations] = useState<Situation[]>([]);
-  const [featherInsight, setFeatherInsight] = useState<FeatherInsight | null>(null);
+  const [featherInsight, setFeatherInsight] = useState<FeatherInsight>({
+    summary: '',
+    feathers: [],
+    activities: [],
+  });
+  const [qualityRatings, setQualityRatings] = useState<QualityRating[]>([]);
 
   const handleStart = () => {
     setStep('input');
@@ -28,7 +33,6 @@ export default function Home() {
     setStep('processing');
 
     try {
-      // Analyze all situations
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,25 +45,62 @@ export default function Home() {
 
       const data = await response.json();
 
-      // Update situations with analysis
       const analyzedSituations = situations.map((situation, index) => ({
         ...situation,
         analysis: data.analyses[index] as SituationAnalysis,
       }));
 
       setSituations(analyzedSituations);
-      setFeatherInsight(data.featherInsight);
+      setQualityRatings(data.qualityRatings || []);
       setStep('results');
     } catch (error) {
       console.error('Error analyzing situations:', error);
-      // Handle error - maybe show an error screen
       setStep('input');
+    }
+  };
+
+  const handleGetFeathers = async () => {
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ situations, action: 'feathers' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get feathers');
+      }
+
+      const data = await response.json();
+      setFeatherInsight(prev => ({ ...prev, feathers: data.feathers }));
+    } catch (error) {
+      console.error('Error getting feathers:', error);
+    }
+  };
+
+  const handleGetActivities = async () => {
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ situations, action: 'activities' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get activities');
+      }
+
+      const data = await response.json();
+      setFeatherInsight(prev => ({ ...prev, activities: data.activities }));
+    } catch (error) {
+      console.error('Error getting activities:', error);
     }
   };
 
   const handleRestart = () => {
     setSituations([]);
-    setFeatherInsight(null);
+    setFeatherInsight({ summary: '', feathers: [], activities: [] });
+    setQualityRatings([]);
     setStep('intro');
   };
 
@@ -77,7 +118,7 @@ export default function Home() {
           totalSituations={10}
           onSituationAdd={handleSituationAdd}
           onComplete={handleAllSituationsComplete}
-          canComplete={situations.length >= 5}
+          canComplete={situations.length >= 2}
           onBack={handleBack}
         />
       )}
@@ -86,11 +127,14 @@ export default function Home() {
         <ProcessingScreen situationsCount={situations.length} />
       )}
 
-      {step === 'results' && featherInsight && (
+      {step === 'results' && (
         <ResultsScreen
           situations={situations}
           featherInsight={featherInsight}
+          qualityRatings={qualityRatings}
           onRestart={handleRestart}
+          onGetFeathers={handleGetFeathers}
+          onGetActivities={handleGetActivities}
         />
       )}
     </main>

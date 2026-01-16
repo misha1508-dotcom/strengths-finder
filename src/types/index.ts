@@ -4,18 +4,32 @@ export interface Situation {
   analysis?: SituationAnalysis;
 }
 
+export interface Quality {
+  name: string;
+  category: 'emotional' | 'behavioral' | 'cognitive' | 'willpower';
+  isNegative: boolean;
+}
+
 export interface SituationAnalysis {
   shortDescription: string;
-  negativeQuality: string;
-  positiveQuality: string;
-  explanation: string;
+  qualities: Quality[];
+  duals: {
+    quality: string;
+    positive: string;
+    explanation: string;
+  }[];
+}
+
+export interface QualityRating {
+  quality: string;
+  count: number;
+  category: string;
 }
 
 export interface FeatherInsight {
   summary: string;
-  microHabits: string[];
-  suitableRoles: string[];
-  finalMessage: string;
+  feathers: string[];
+  activities: string[];
 }
 
 export type AppStep = 'intro' | 'input' | 'processing' | 'results';

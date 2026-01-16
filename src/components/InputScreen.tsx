@@ -19,14 +19,11 @@ export default function InputScreen({
   canComplete,
   onBack,
 }: InputScreenProps) {
-  const [recordingTime, setRecordingTime] = useState(0);
   const [text, setText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
   const [speechSupported, setSpeechSupported] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -42,17 +39,27 @@ export default function InputScreen({
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         recognitionRef.current.onresult = (event: any) => {
-          let transcript = '';
+          let finalTranscript = '';
+          let interimTranscript = '';
+
           for (let i = 0; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
           }
-          setText(transcript);
+
+          setText(finalTranscript + interimTranscript);
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         recognitionRef.current.onerror = (event: any) => {
           console.error('Speech recognition error:', event.error);
-          stopRecording();
+          if (event.error !== 'no-speech') {
+            stopRecording();
+          }
         };
 
         recognitionRef.current.onend = () => {
@@ -69,7 +76,6 @@ export default function InputScreen({
     }
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -83,36 +89,17 @@ export default function InputScreen({
   const startRecording = () => {
     if (!recognitionRef.current) return;
 
-    setText('');
     setIsRecording(true);
-    setTimeLeft(60);
-    setRecordingTime(0);
 
     try {
       recognitionRef.current.start();
     } catch {
       // Recognition might already be started
     }
-
-    timerRef.current = setInterval(() => {
-      setRecordingTime((prev) => prev + 1);
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          stopRecording();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    setRecordingTime(0);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -122,17 +109,10 @@ export default function InputScreen({
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const handleSubmit = () => {
     if (text.trim().length < 10) return;
     onSituationAdd(text.trim());
     setText('');
-    setTimeLeft(60);
     textareaRef.current?.focus();
   };
 
@@ -144,6 +124,7 @@ export default function InputScreen({
 
   const situationsDone = currentSituation - 1;
   const progressPercent = (situationsDone / totalSituations) * 100;
+  const canSkipToEnd = situationsDone >= 2;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 fade-in">
@@ -169,7 +150,7 @@ export default function InputScreen({
               {situationsDone} записано
             </span>
           </div>
-          <div className="h-2 bg-[var(--muted)]/20 rounded-full overflow-hidden">
+          <div className="h-2 bg-[var(--mint)]/30 rounded-full overflow-hidden">
             <div
               className="h-full bg-[var(--accent)] rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
@@ -178,7 +159,7 @@ export default function InputScreen({
         </div>
 
         {/* Main Input Area */}
-        <div className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg border border-[var(--muted)]/20">
+        <div className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-lg border border-[var(--mint)]/30">
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-semibold">
@@ -196,65 +177,55 @@ export default function InputScreen({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Начните писать или нажмите на микрофон..."
-              className="w-full h-40 p-4 bg-background border border-[var(--muted)]/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-foreground placeholder-[var(--muted)]"
-              disabled={isRecording}
+              className="w-full h-40 p-4 bg-background border border-[var(--mint)]/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-foreground placeholder-[var(--muted)]"
             />
 
             {/* Voice Recording */}
             {speechSupported && (
               <div className="space-y-3">
-                <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center justify-center">
                   <button
                     onClick={isRecording ? stopRecording : startRecording}
                     className={`flex items-center gap-3 px-6 py-3 rounded-full font-medium transition-all ${
                       isRecording
                         ? 'bg-red-500 text-white recording-pulse'
-                        : 'bg-[var(--muted)]/20 hover:bg-[var(--muted)]/30 text-foreground'
+                        : 'bg-[var(--mint)]/30 hover:bg-[var(--mint)]/50 text-foreground border border-[var(--accent)]/30'
                     }`}
                   >
-                    <svg
-                      className="w-6 h-6"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z" />
-                      <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                    </svg>
-                    {isRecording ? `Остановить` : 'Записать голосом'}
+                    {isRecording ? (
+                      <>
+                        <span className="w-3 h-3 bg-white rounded-sm"></span>
+                        Остановить запись
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-6 h-6"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5z" />
+                          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                        </svg>
+                        Записать голосом
+                      </>
+                    )}
                   </button>
                 </div>
 
                 {isRecording && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-red-500 font-medium flex items-center gap-2">
-                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                        Запись идёт
-                      </span>
-                      <span className={`font-mono font-bold ${recordingTime > 60 ? 'text-red-500' : 'text-foreground'}`}>
-                        {formatTime(recordingTime)}
-                      </span>
-                    </div>
-                    {text && (
-                      <div className="text-sm text-[var(--muted)] bg-background/50 rounded-lg p-3 max-h-24 overflow-y-auto">
-                        {text}
-                      </div>
-                    )}
-                    {recordingTime > 60 && (
-                      <p className="text-xs text-red-500">
-                        Рекомендуется не более 1 минуты на ситуацию
-                      </p>
-                    )}
+                  <div className="flex items-center justify-center gap-2 text-red-500">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <span className="text-sm font-medium">Идёт запись... говорите</span>
                   </div>
-                )}
-
-                {!isRecording && (
-                  <p className="text-xs text-center text-[var(--muted)]">
-                    Рекомендуется не более 1 минуты на ситуацию
-                  </p>
                 )}
               </div>
             )}
+
+            {/* Hint */}
+            <p className="text-sm text-center text-[var(--muted)] italic">
+              Рассказывай, как будто жалуешься маме, папе, подруге или другу. Можно ныть.
+            </p>
 
             {/* Character count */}
             <div className="text-right text-sm text-[var(--muted)]">
@@ -268,26 +239,26 @@ export default function InputScreen({
           <button
             onClick={handleSubmit}
             disabled={text.trim().length < 10 || currentSituation > totalSituations}
-            className="px-8 py-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] disabled:bg-[var(--muted)]/30 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100"
+            className="px-8 py-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] disabled:bg-[var(--muted)]/30 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100 shadow-lg shadow-[var(--accent)]/20"
           >
             {currentSituation > totalSituations
               ? 'Максимум ситуаций'
               : `Сохранить ситуацию ${currentSituation}`}
           </button>
 
-          {canComplete && (
+          {canSkipToEnd && (
             <button
               onClick={onComplete}
-              className="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95"
+              className="px-8 py-3 bg-[var(--card-bg)] border-2 border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95"
             >
-              Вскрыть покровы
+              Перейти к анализу →
             </button>
           )}
         </div>
 
-        {!canComplete && (
+        {!canSkipToEnd && (
           <p className="text-center text-sm text-[var(--muted)]">
-            Добавьте минимум 5 ситуаций, чтобы получить результат
+            Добавьте минимум 2 ситуации, чтобы перейти к анализу
           </p>
         )}
 
@@ -299,4 +270,3 @@ export default function InputScreen({
     </div>
   );
 }
-
