@@ -290,23 +290,34 @@ export default function ResultsScreen({
 
             {/* Explanation */}
             <div className="bg-[var(--mint)]/20 rounded-xl p-5 mb-6 border border-[var(--accent)]/20">
-              <p className="text-[var(--muted)] leading-relaxed mb-3">
+              <p className="text-[var(--muted)] leading-relaxed mb-4">
                 <strong className="text-foreground">Что такое пёрышки?</strong> Иногда большие и успешные системы
                 существуют благодаря невероятно малому элементу — противовесу. Это как пёрышко, которое не даёт
                 человеку "разъехаться" негативными сторонами своих качеств. Маленькое регулярное действие может
                 сохранить огромное количество позитивных проявлений твоих качеств.
               </p>
-              <a
-                href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[var(--accent)] hover:text-[var(--accent-light)] font-medium"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                </svg>
-                Подробнее о методе в видео
-              </a>
+
+              <div className="bg-[var(--card-bg)] rounded-lg p-4 border border-[var(--accent)]/30">
+                <p className="text-foreground font-medium mb-2">
+                  Чтобы по-настоящему понять эту идею — посмотри видео:
+                </p>
+                <a
+                  href="https://youtu.be/kOmJwW1Is6k?si=TMymeJvsW42aDKHq"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[var(--accent)] hover:text-[var(--accent-light)] font-semibold text-lg mb-3"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                  </svg>
+                  Смотреть видео о методе пёрышек
+                </a>
+                <div className="text-sm text-[var(--muted)] space-y-1">
+                  <p>• Не перематывай и не ускоряй — важно прочувствовать идею целиком</p>
+                  <p>• Постарайся проникнуться вайбом и понять суть метода</p>
+                  <p>• После видео вернись сюда — не уходи в рилсы и шортсы</p>
+                </div>
+              </div>
             </div>
 
             {/* Categorized Feathers */}
