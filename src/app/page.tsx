@@ -16,6 +16,7 @@ export default function Home() {
     activities: [],
   });
   const [qualityRatings, setQualityRatings] = useState<QualityRating[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleStart = () => {
     setStep('input');
@@ -31,6 +32,7 @@ export default function Home() {
 
   const handleAllSituationsComplete = async () => {
     setStep('processing');
+    setError(null);
 
     try {
       const response = await fetch('/api/analyze', {
@@ -39,11 +41,15 @@ export default function Home() {
         body: JSON.stringify({ situations: situations.map(s => s.text) }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to analyze situations');
+        throw new Error(data.error || 'Failed to analyze situations');
       }
 
-      const data = await response.json();
+      if (!data.analyses || !Array.isArray(data.analyses)) {
+        throw new Error('Invalid response format');
+      }
 
       const analyzedSituations = situations.map((situation, index) => ({
         ...situation,
@@ -53,8 +59,9 @@ export default function Home() {
       setSituations(analyzedSituations);
       setQualityRatings(data.qualityRatings || []);
       setStep('results');
-    } catch (error) {
-      console.error('Error analyzing situations:', error);
+    } catch (err) {
+      console.error('Error analyzing situations:', err);
+      setError(err instanceof Error ? err.message : 'Произошла ошибка при анализе');
       setStep('input');
     }
   };
@@ -113,14 +120,21 @@ export default function Home() {
       {step === 'intro' && <IntroScreen onStart={handleStart} />}
 
       {step === 'input' && (
-        <InputScreen
-          currentSituation={situations.length + 1}
-          totalSituations={10}
-          onSituationAdd={handleSituationAdd}
-          onComplete={handleAllSituationsComplete}
-          canComplete={situations.length >= 2}
-          onBack={handleBack}
-        />
+        <>
+          {error && (
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg z-50">
+              {error}
+            </div>
+          )}
+          <InputScreen
+            currentSituation={situations.length + 1}
+            totalSituations={10}
+            onSituationAdd={handleSituationAdd}
+            onComplete={handleAllSituationsComplete}
+            canComplete={situations.length >= 2}
+            onBack={handleBack}
+          />
+        </>
       )}
 
       {step === 'processing' && (

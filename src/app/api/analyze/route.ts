@@ -78,7 +78,7 @@ ${situations.map((s: string, i: number) => `${i + 1}. ${s}`).join('\n\n')}
 Отвечай только JSON, без дополнительного текста.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4096,
       messages: [
         {
@@ -141,7 +141,7 @@ ${dualsSummary}
 Только JSON, без дополнительного текста.`;
 
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -184,7 +184,7 @@ async function handleActivities(situations: { text: string; analysis: { qualitie
 Только JSON, без дополнительного текста.`;
 
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 2048,
     messages: [{ role: 'user', content: prompt }],
   });
