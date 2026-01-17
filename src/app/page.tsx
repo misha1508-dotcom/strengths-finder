@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Situation, SituationAnalysis, FeatherInsight, QualityRating, AppStep } from '@/types';
 import IntroScreen from '@/components/IntroScreen';
 import InputScreen from '@/components/InputScreen';
 import ProcessingScreen from '@/components/ProcessingScreen';
 import ResultsScreen from '@/components/ResultsScreen';
+
+// localStorage keys
+const STORAGE_KEYS = {
+  situations: 'inversion_situations',
+  step: 'inversion_step',
+  results: 'inversion_results',
+};
 
 export default function Home() {
   const [step, setStep] = useState<AppStep>('intro');
@@ -18,6 +25,63 @@ export default function Home() {
   });
   const [qualityRatings, setQualityRatings] = useState<QualityRating[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load saved data from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSituations = localStorage.getItem(STORAGE_KEYS.situations);
+      const savedStep = localStorage.getItem(STORAGE_KEYS.step);
+      const savedResults = localStorage.getItem(STORAGE_KEYS.results);
+
+      if (savedSituations) {
+        const parsed = JSON.parse(savedSituations);
+        setSituations(parsed);
+      }
+
+      // Only restore to input step (not processing or results without data)
+      if (savedStep === 'input' && savedSituations) {
+        setStep('input');
+      }
+
+      // Restore results if available
+      if (savedResults && savedStep === 'results') {
+        const results = JSON.parse(savedResults);
+        if (results.situations) setSituations(results.situations);
+        if (results.qualityRatings) setQualityRatings(results.qualityRatings);
+        if (results.featherInsight) setFeatherInsight(results.featherInsight);
+        setStep('results');
+      }
+    } catch (e) {
+      console.error('Error loading from localStorage:', e);
+    }
+    setIsHydrated(true);
+  }, []);
+
+  // Save situations to localStorage when they change
+  useEffect(() => {
+    if (isHydrated && situations.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.situations, JSON.stringify(situations));
+    }
+  }, [situations, isHydrated]);
+
+  // Save step to localStorage
+  useEffect(() => {
+    if (isHydrated && step !== 'processing') {
+      localStorage.setItem(STORAGE_KEYS.step, step);
+    }
+  }, [step, isHydrated]);
+
+  // Save results to localStorage
+  useEffect(() => {
+    if (isHydrated && step === 'results' && qualityRatings.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.results, JSON.stringify({
+        situations,
+        qualityRatings,
+        featherInsight,
+      }));
+    }
+  }, [step, situations, qualityRatings, featherInsight, isHydrated]);
 
   const handleStart = () => {
     setStep('input');
@@ -166,6 +230,11 @@ export default function Home() {
   };
 
   const handleRestart = () => {
+    // Clear localStorage
+    localStorage.removeItem(STORAGE_KEYS.situations);
+    localStorage.removeItem(STORAGE_KEYS.step);
+    localStorage.removeItem(STORAGE_KEYS.results);
+
     setSituations([]);
     setCurrentSituationIndex(0);
     setFeatherInsight({ summary: '', feathers: [], activities: [] });
@@ -176,6 +245,18 @@ export default function Home() {
   const handleBack = () => {
     setStep('intro');
   };
+
+  // Show loading state during hydration
+  if (!isHydrated) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-[var(--muted)]">Загрузка...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">

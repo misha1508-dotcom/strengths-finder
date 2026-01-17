@@ -160,10 +160,10 @@ export default function ResultsScreen({
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-3xl md:text-4xl font-bold gradient-text">
-            Анализ сильных и слабых сторон
+            Результаты инверсии
           </h1>
           <p className="text-[var(--muted)]">
-            На основе {situations.length} ситуаций
+            Твои скрытые качества на основе {situations.length} ситуаций
           </p>
         </div>
 
@@ -615,47 +615,76 @@ export default function ResultsScreen({
           </div>
         )}
 
-        {/* Contact and Final Message */}
+        {/* Final CTA Block - What to do next */}
         {showActivities && (
           <div className="space-y-6 py-6">
-            {/* Feedback CTA - prominent */}
-            <div className="bg-gradient-to-r from-[var(--accent)]/10 to-[var(--accent-light)]/10 rounded-2xl p-6 border border-[var(--accent)]/30">
+            {/* Main CTA - Clear next steps */}
+            <div className="bg-gradient-to-br from-[var(--accent)] to-[var(--accent-dark)] rounded-2xl p-8 text-white shadow-xl">
+              <div className="text-center space-y-6">
+                <h2 className="text-2xl font-bold">
+                  Что делать дальше?
+                </h2>
+                <div className="grid gap-4 md:grid-cols-3 text-left">
+                  <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                    <div className="text-3xl mb-2">1</div>
+                    <h3 className="font-semibold mb-1">Выбери 1 пёрышко</h3>
+                    <p className="text-sm text-white/80">
+                      Из раздела выше. Начни практиковать уже сегодня.
+                    </p>
+                  </div>
+                  <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                    <div className="text-3xl mb-2">2</div>
+                    <h3 className="font-semibold mb-1">Скопируй данные</h3>
+                    <p className="text-sm text-white/80">
+                      Кнопка выше. Вставь в ChatGPT или Claude для дальнейшей работы.
+                    </p>
+                  </div>
+                  <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                    <div className="text-3xl mb-2">3</div>
+                    <h3 className="font-semibold mb-1">Поделись с друзьями</h3>
+                    <p className="text-sm text-white/80">
+                      Отправь ссылку тем, кому это тоже может помочь.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feedback CTA */}
+            <div className="bg-[var(--card-bg)] rounded-2xl p-6 border border-[var(--mint)]/30">
               <div className="text-center space-y-4">
-                <h3 className="text-xl font-semibold text-foreground">
+                <h3 className="text-lg font-semibold text-foreground">
                   Понравился результат?
                 </h3>
                 <p className="text-[var(--muted)] max-w-md mx-auto">
-                  Напиши мне в телеграм — расскажи, что зацепило, что было полезно, а что можно улучшить.
-                  Мне правда интересно!
+                  Напиши мне в телеграм — расскажи, что зацепило и что можно улучшить
                 </p>
                 <a
                   href="https://t.me/krechet_mike"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
+                  className="inline-flex items-center gap-3 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
                 >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                   </svg>
-                  Написать отзыв @krechet_mike
+                  Написать @krechet_mike
                 </a>
               </div>
             </div>
 
-            {/* Donation button */}
-            <div className="bg-[var(--card-bg)] rounded-2xl p-6 border border-[var(--mint)]/30">
+            {/* Support project */}
+            <div className="bg-[var(--mint)]/10 rounded-2xl p-6 border border-[var(--mint)]/30">
               <div className="text-center space-y-4">
                 <p className="text-[var(--muted)]">
-                  Если было реально полезно и хочется поддержать проект:
+                  Если было полезно и хочется поддержать проект:
                 </p>
                 <div className="flex justify-center">
                   <iframe
                     src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1FB7C5Q525D.260117&"
                     width="330"
                     height="50"
-                    frameBorder="0"
-                    allowTransparency={true}
-                    scrolling="no"
+                    style={{ border: 'none' }}
                     title="Donate"
                   />
                 </div>

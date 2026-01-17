@@ -4,15 +4,91 @@ interface IntroScreenProps {
   onStart: () => void;
 }
 
+// Инверсия Logo Component
+function InversionLogo({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 120 120"
+      className={className}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Background circle with gradient */}
+      <defs>
+        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="var(--accent)" />
+          <stop offset="100%" stopColor="var(--accent-light)" />
+        </linearGradient>
+        <linearGradient id="arrowGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#ef4444" />
+          <stop offset="100%" stopColor="var(--accent)" />
+        </linearGradient>
+      </defs>
+
+      {/* Outer ring */}
+      <circle cx="60" cy="60" r="56" stroke="url(#logoGradient)" strokeWidth="3" fill="none" opacity="0.3"/>
+
+      {/* Inner background */}
+      <circle cx="60" cy="60" r="50" fill="var(--card-bg)" />
+
+      {/* Rotating arrows showing transformation */}
+      {/* Down arrow (red/negative) */}
+      <path
+        d="M60 25 L60 55 M50 45 L60 55 L70 45"
+        stroke="#ef4444"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.6"
+      />
+
+      {/* Up arrow (green/positive) */}
+      <path
+        d="M60 95 L60 65 M50 75 L60 65 L70 75"
+        stroke="var(--accent)"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Circular arrows showing inversion/rotation */}
+      <path
+        d="M30 60 A30 30 0 0 1 60 30"
+        stroke="url(#arrowGradient)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M90 60 A30 30 0 0 1 60 90"
+        stroke="url(#arrowGradient)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+      />
+
+      {/* Arrow tips for circular motion */}
+      <polygon points="58,30 60,24 66,32" fill="var(--accent)" />
+      <polygon points="62,90 60,96 54,88" fill="#ef4444" />
+    </svg>
+  );
+}
+
 export default function IntroScreen({ onStart }: IntroScreenProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 fade-in">
       <div className="max-w-2xl text-center space-y-8">
-        {/* Header */}
+        {/* Logo and Header */}
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-            Найди свои сильные стороны
+          <div className="flex justify-center mb-4">
+            <InversionLogo className="w-24 h-24 md:w-28 md:h-28" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold gradient-text">
+            Инверсия
           </h1>
+          <p className="text-lg text-[var(--muted)]">
+            Преврати провалы в сильные стороны
+          </p>
         </div>
 
         {/* Pareto Principle Explanation */}
@@ -104,7 +180,7 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
           onClick={onStart}
           className="w-full md:w-auto px-12 py-4 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
         >
-          Начать упражнение
+          Начать инверсию
         </button>
       </div>
     </div>

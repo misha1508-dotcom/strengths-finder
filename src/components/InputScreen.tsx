@@ -140,6 +140,29 @@ export default function InputScreen({
           </div>
         </details>
 
+        {/* Progress indicator */}
+        <div className="bg-[var(--card-bg)] rounded-xl p-4 border border-[var(--mint)]/30">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-foreground">Прогресс заполнения</span>
+            <span className="text-sm text-[var(--accent)] font-semibold">
+              {situationsDone} / 5 рекомендуемых
+            </span>
+          </div>
+          <div className="h-2 bg-[var(--mint)]/20 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] rounded-full transition-all duration-300"
+              style={{ width: `${Math.min((situationsDone / 5) * 100, 100)}%` }}
+            />
+          </div>
+          <p className="text-xs text-[var(--muted)] mt-2">
+            {situationsDone < 2
+              ? 'Минимум 2 ситуации для анализа'
+              : situationsDone < 5
+                ? 'Чем больше ситуаций, тем точнее анализ'
+                : 'Отлично! Можно переходить к анализу'}
+          </p>
+        </div>
+
         {/* Counter and Navigation */}
         <div className="flex items-center justify-between">
           <button
