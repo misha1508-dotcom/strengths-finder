@@ -30,10 +30,11 @@ export interface FeatherInsight {
   summary: string;
   feathers: string[];
   feathersStructured?: {
-    stopCrane: string[];
-    mantra: string[];
-    ritual: string[];
+    moment: string[];
+    mindset: string[];
+    regular: string[];
   };
+  uniqueActions?: string[];
   activities: string[];
   // Structured activities data
   sortedWeakQualities?: string[];
@@ -41,7 +42,7 @@ export interface FeatherInsight {
   roles?: { role: string; type: string; whyComfortable: string }[];
   capitalizeAdvice?: { advice: string; explanation: string }[];
   hobbies?: string[];
-  celebrities?: { name: string; description: string; imageQuery: string }[] | string[];
+  celebrities?: string[];
 }
 
 export type AppStep = 'intro' | 'input' | 'processing' | 'results';

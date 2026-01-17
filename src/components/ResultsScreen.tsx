@@ -78,15 +78,23 @@ export default function ResultsScreen({
 
     if (featherInsight.feathersStructured) {
       prompt += `**Пёрышки-противовесы:**\n`;
-      if (featherInsight.feathersStructured.stopCrane?.length) {
-        prompt += `Стоп-кран: ${featherInsight.feathersStructured.stopCrane.join('; ')}\n`;
+      if (featherInsight.feathersStructured.moment?.length) {
+        prompt += `В момент: ${featherInsight.feathersStructured.moment.join('; ')}\n`;
       }
-      if (featherInsight.feathersStructured.mantra?.length) {
-        prompt += `Мантра: ${featherInsight.feathersStructured.mantra.join('; ')}\n`;
+      if (featherInsight.feathersStructured.mindset?.length) {
+        prompt += `Mindset: ${featherInsight.feathersStructured.mindset.join('; ')}\n`;
       }
-      if (featherInsight.feathersStructured.ritual?.length) {
-        prompt += `Ритуал: ${featherInsight.feathersStructured.ritual.join('; ')}\n`;
+      if (featherInsight.feathersStructured.regular?.length) {
+        prompt += `Регулярно: ${featherInsight.feathersStructured.regular.join('; ')}\n`;
       }
+      prompt += '\n';
+    }
+
+    if (featherInsight.uniqueActions?.length) {
+      prompt += `**Уникальные действия:**\n`;
+      featherInsight.uniqueActions.forEach((a, i) => {
+        prompt += `${i + 1}. ${a}\n`;
+      });
       prompt += '\n';
     }
 
@@ -320,57 +328,82 @@ export default function ResultsScreen({
 
             {/* PROMINENT Main recommendations block */}
             <div className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] rounded-2xl p-6 mb-6 text-white shadow-xl">
-              <h3 className="text-xl font-bold mb-2">Твои персональные пёрышки</h3>
+              <h3 className="text-xl font-bold mb-2">Рекомендуемые микро-действия конкретно под тебя</h3>
               <p className="text-white/90 leading-relaxed">
-                Микро-действия конкретно для тебя, чтобы негативные стороны твоих качеств НЕ ПРОЯВЛЯЛИСЬ.
-                Не надо с собой бороться — надо просто не давать им активироваться!
+                Это не общие советы, а персональные пёрышки именно для твоей комбинации качеств.
+                Выбери 1-2 и начни делать сегодня!
               </p>
             </div>
 
-            {/* Simplified Feathers - 3 categories, 1-2 best each */}
+            {/* Feathers - 3 categories */}
             <div className="grid gap-4 md:grid-cols-3">
-              {/* Stop Crane */}
-              {featherInsight.feathersStructured.stopCrane && featherInsight.feathersStructured.stopCrane.length > 0 && (
+              {/* В момент */}
+              {featherInsight.feathersStructured.moment && featherInsight.feathersStructured.moment.length > 0 && (
                 <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-5 border border-red-200 dark:border-red-800">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-2xl">🛑</span>
-                    <h3 className="font-bold text-red-700 dark:text-red-400">СТОП-КРАН</h3>
+                    <span className="text-2xl">⚡</span>
+                    <h3 className="font-bold text-red-700 dark:text-red-400">В МОМЕНТ</h3>
                   </div>
-                  <p className="text-xs text-red-600/70 dark:text-red-400/70 mb-3">В момент когда "накрывает"</p>
-                  {featherInsight.feathersStructured.stopCrane.map((item, index) => (
-                    <p key={index} className="text-foreground font-medium leading-relaxed mb-2">{item}</p>
-                  ))}
+                  <p className="text-xs text-red-600/70 dark:text-red-400/70 mb-3">Когда &quot;накрывает&quot;</p>
+                  <ul className="space-y-2">
+                    {featherInsight.feathersStructured.moment.map((item, index) => (
+                      <li key={index} className="text-foreground text-sm leading-relaxed">• {item}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
-              {/* Mantra */}
-              {featherInsight.feathersStructured.mantra && featherInsight.feathersStructured.mantra.length > 0 && (
+              {/* Mindset */}
+              {featherInsight.feathersStructured.mindset && featherInsight.feathersStructured.mindset.length > 0 && (
                 <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-5 border border-purple-200 dark:border-purple-800">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-2xl">🧠</span>
-                    <h3 className="font-bold text-purple-700 dark:text-purple-400">МАНТРА</h3>
+                    <h3 className="font-bold text-purple-700 dark:text-purple-400">MINDSET</h3>
                   </div>
-                  <p className="text-xs text-purple-600/70 dark:text-purple-400/70 mb-3">Держи в голове как установку</p>
-                  {featherInsight.feathersStructured.mantra.map((item, index) => (
-                    <p key={index} className="text-foreground font-medium leading-relaxed mb-2 italic">&quot;{item}&quot;</p>
-                  ))}
+                  <p className="text-xs text-purple-600/70 dark:text-purple-400/70 mb-3">Держи в голове</p>
+                  <ul className="space-y-2">
+                    {featherInsight.feathersStructured.mindset.map((item, index) => (
+                      <li key={index} className="text-foreground text-sm leading-relaxed">• {item}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
-              {/* Ritual */}
-              {featherInsight.feathersStructured.ritual && featherInsight.feathersStructured.ritual.length > 0 && (
+              {/* Регулярно */}
+              {featherInsight.feathersStructured.regular && featherInsight.feathersStructured.regular.length > 0 && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-2xl">🔄</span>
-                    <h3 className="font-bold text-blue-700 dark:text-blue-400">РИТУАЛ</h3>
+                    <h3 className="font-bold text-blue-700 dark:text-blue-400">РЕГУЛЯРНО</h3>
                   </div>
-                  <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mb-3">Регулярное действие для профилактики</p>
-                  {featherInsight.feathersStructured.ritual.map((item, index) => (
-                    <p key={index} className="text-foreground font-medium leading-relaxed mb-2">{item}</p>
-                  ))}
+                  <p className="text-xs text-blue-600/70 dark:text-blue-400/70 mb-3">Раз в неделю/месяц</p>
+                  <ul className="space-y-2">
+                    {featherInsight.feathersStructured.regular.map((item, index) => (
+                      <li key={index} className="text-foreground text-sm leading-relaxed">• {item}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
+
+            {/* Unique Actions - the special ones */}
+            {featherInsight.uniqueActions && featherInsight.uniqueActions.length > 0 && (
+              <div className="mt-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-5 border-2 border-amber-300 dark:border-amber-700">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-2xl">✨</span>
+                  <h3 className="font-bold text-amber-700 dark:text-amber-400">УНИКАЛЬНЫЕ ДЕЙСТВИЯ</h3>
+                </div>
+                <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mb-3">Самые неочевидные и изящные вещи именно для тебя</p>
+                <ul className="space-y-3">
+                  {featherInsight.uniqueActions.map((item, index) => (
+                    <li key={index} className="text-foreground leading-relaxed flex items-start gap-2">
+                      <span className="text-amber-500 font-bold">{index + 1}.</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Continue button */}
             {!showActivities && (
@@ -496,39 +529,22 @@ export default function ResultsScreen({
               </div>
             )}
 
-            {/* Celebrities with similar personality - small circles */}
+            {/* Celebrities with similar personality - simple list */}
             {featherInsight.celebrities && featherInsight.celebrities.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">
-                  ⭐ Знаменитости с похожим типом личности
+                  ⭐ Топ-5 знаменитостей с похожим типом личности
                 </h3>
-                <div className="flex flex-wrap gap-4 justify-center">
-                  {featherInsight.celebrities.map((celebrity, index) => {
-                    const isObject = typeof celebrity === 'object' && celebrity !== null;
-                    const name = isObject ? celebrity.name : (celebrity as string).split('—')[0]?.trim();
-                    const description = isObject ? celebrity.description : (celebrity as string).split('—')[1]?.trim();
-                    const imageQuery = isObject && 'imageQuery' in celebrity ? celebrity.imageQuery : null;
-
-                    return (
-                      <div key={index} className="flex flex-col items-center text-center max-w-[120px]">
-                        <div className="w-20 h-20 rounded-full bg-[var(--mint)]/30 overflow-hidden border-2 border-[var(--accent)]/30 mb-2">
-                          <img
-                            src={`https://unavatar.io/twitter/${name?.split(' ')[0]?.toLowerCase()}?fallback=https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Celebrity')}&background=10b981&color=fff&size=80`}
-                            alt={name || ''}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Celebrity')}&background=10b981&color=fff&size=80`;
-                            }}
-                          />
-                        </div>
-                        <p className="font-semibold text-foreground text-sm">{name}</p>
-                        {description && (
-                          <p className="text-xs text-[var(--muted)] mt-1">{description}</p>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="grid gap-3 md:grid-cols-2">
+                  {featherInsight.celebrities.slice(0, 5).map((celebrity, index) => (
+                    <div
+                      key={index}
+                      className="bg-[var(--card-bg)] p-4 rounded-xl border border-[var(--mint)]/30 flex items-start gap-3"
+                    >
+                      <span className="text-xl">🌟</span>
+                      <span className="text-foreground">{celebrity}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

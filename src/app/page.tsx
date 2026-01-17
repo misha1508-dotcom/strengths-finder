@@ -93,6 +93,7 @@ export default function Home() {
       setFeatherInsight(prev => ({
         ...prev,
         feathersStructured: data.feathersStructured,
+        uniqueActions: data.uniqueActions,
       }));
     } catch (error) {
       console.error('Error getting feathers:', error);
