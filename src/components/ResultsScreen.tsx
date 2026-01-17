@@ -694,13 +694,26 @@ export default function ResultsScreen({
         )}
 
         {/* Restart Button */}
-        <div className="text-center pt-8">
+        <div className="text-center pt-8 space-y-4">
           <button
             onClick={onRestart}
             className="px-8 py-3 bg-[var(--card-bg)] border-2 border-[var(--muted)]/30 text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)] font-semibold rounded-full transition-all"
           >
             Начать заново
           </button>
+
+          {/* Link to main projects page */}
+          <div>
+            <a
+              href="https://krechet.space"
+              className="inline-flex items-center gap-2 text-sm text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Посмотреть другие проекты
+            </a>
+          </div>
         </div>
       </div>
     </div>
