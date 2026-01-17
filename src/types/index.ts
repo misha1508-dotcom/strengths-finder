@@ -40,9 +40,9 @@ export interface FeatherInsight {
   sortedWeakQualities?: string[];
   sortedStrongQualities?: string[];
   roles?: { role: string; type: string; income: string }[];
-  money?: { opportunity: string; probability: number }[];
+  money?: { opportunity: string; probability: number; whyEasy?: string }[];
   hobbies?: string[];
-  celebrities?: string[];
+  celebrities?: { name: string; description: string; wikiId: string }[] | string[];
 }
 
 export type AppStep = 'intro' | 'input' | 'processing' | 'results';

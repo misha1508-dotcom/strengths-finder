@@ -530,22 +530,29 @@ export default function ResultsScreen({
                 <h3 className="text-lg font-semibold text-foreground mb-3">
                   💰 Что из этого принесёт МНОГО денег и ЛЕГКО
                 </h3>
+                <p className="text-sm text-[var(--muted)] mb-4">
+                  Бизнес-идеи подобраны под твои сильные стороны. Где есть спрос, дефицит предложения, и тебе будет легко начать.
+                </p>
                 <div className="space-y-3">
                   {featherInsight.money.map((item, index) => {
-                    // Visual hierarchy based on probability
+                    // Visual hierarchy based on position
                     const scale = index === 0 ? 'text-xl' : index === 1 ? 'text-lg' : index === 2 ? 'text-base' : 'text-sm';
-                    const opacity = index === 0 ? 'opacity-100' : index === 1 ? 'opacity-90' : index === 2 ? 'opacity-80' : 'opacity-70';
-                    const padding = index === 0 ? 'p-5' : index === 1 ? 'p-4' : 'p-3';
+                    const opacity = index === 0 ? 'opacity-100' : index === 1 ? 'opacity-95' : index === 2 ? 'opacity-90' : 'opacity-85';
+                    const padding = index === 0 ? 'p-6' : index === 1 ? 'p-5' : 'p-4';
+                    const borderStyle = index === 0 ? 'border-2 border-[var(--accent)]' : 'border border-[var(--mint)]/30';
 
                     return (
                       <div
                         key={index}
-                        className={`bg-[var(--card-bg)] ${padding} rounded-xl border border-[var(--mint)]/30 ${opacity}`}
+                        className={`bg-[var(--card-bg)] ${padding} rounded-xl ${borderStyle} ${opacity}`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className={`${scale} font-semibold text-foreground`}>#{index + 1}</span>
+                          <span className={`${scale} font-bold ${index === 0 ? 'text-[var(--accent)]' : 'text-foreground'}`}>
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                          </span>
                           <div className="flex items-center gap-2">
-                            <div className="w-24 h-2 bg-[var(--mint)]/20 rounded-full overflow-hidden">
+                            <span className="text-xs text-[var(--muted)]">Вероятность успеха:</span>
+                            <div className="w-20 h-2 bg-[var(--mint)]/20 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] rounded-full"
                                 style={{ width: `${item.probability}%` }}
@@ -554,7 +561,13 @@ export default function ResultsScreen({
                             <span className="text-sm font-bold text-[var(--accent)]">{item.probability}%</span>
                           </div>
                         </div>
-                        <p className={`${scale} text-foreground`}>{item.opportunity}</p>
+                        <p className={`${scale} text-foreground font-medium`}>{item.opportunity}</p>
+                        {item.whyEasy && (
+                          <p className="text-sm text-[var(--accent)] mt-2 flex items-start gap-2">
+                            <span>✨</span>
+                            <span>{item.whyEasy}</span>
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -562,22 +575,51 @@ export default function ResultsScreen({
               </div>
             )}
 
-            {/* Celebrities with similar personality */}
+            {/* Celebrities with similar personality - with photos */}
             {featherInsight.celebrities && featherInsight.celebrities.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-3">
                   ⭐ Знаменитости с похожим типом личности
                 </h3>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {featherInsight.celebrities.map((celebrity, index) => (
-                    <div
-                      key={index}
-                      className="bg-[var(--card-bg)] p-4 rounded-xl border border-[var(--mint)]/30 flex items-start gap-3"
-                    >
-                      <span className="text-xl">🌟</span>
-                      <span className="text-foreground">{celebrity}</span>
-                    </div>
-                  ))}
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {featherInsight.celebrities.map((celebrity, index) => {
+                    // Handle both old string format and new object format
+                    const isObject = typeof celebrity === 'object' && celebrity !== null;
+                    const name = isObject ? celebrity.name : (celebrity as string).split('—')[0]?.trim();
+                    const description = isObject ? celebrity.description : (celebrity as string).split('—')[1]?.trim();
+                    const wikiId = isObject ? celebrity.wikiId : null;
+
+                    return (
+                      <div
+                        key={index}
+                        className="bg-[var(--card-bg)] rounded-xl border border-[var(--mint)]/30 overflow-hidden"
+                      >
+                        {/* Celebrity photo from Wikipedia */}
+                        {wikiId && (
+                          <div className="aspect-square bg-[var(--mint)]/20 relative overflow-hidden">
+                            <img
+                              src={`https://en.wikipedia.org/wiki/Special:Redirect/file/${wikiId}.jpg`}
+                              alt={name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback: try without .jpg extension or use placeholder
+                                const target = e.target as HTMLImageElement;
+                                if (!target.src.includes('placeholder')) {
+                                  target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Celebrity')}&background=10b981&color=fff&size=200`;
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <h4 className="font-semibold text-foreground mb-1">{name}</h4>
+                          {description && (
+                            <p className="text-sm text-[var(--muted)]">{description}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
