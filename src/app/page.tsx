@@ -14,7 +14,6 @@ export default function Home() {
   const [featherInsight, setFeatherInsight] = useState<FeatherInsight>({
     summary: '',
     feathers: [],
-    uniqueActions: [],
     activities: [],
   });
   const [qualityRatings, setQualityRatings] = useState<QualityRating[]>([]);
@@ -93,9 +92,7 @@ export default function Home() {
       const data = await response.json();
       setFeatherInsight(prev => ({
         ...prev,
-        feathers: data.feathers || [],
         feathersStructured: data.feathersStructured,
-        uniqueActions: data.uniqueActions || [],
       }));
     } catch (error) {
       console.error('Error getting feathers:', error);
@@ -117,11 +114,10 @@ export default function Home() {
       const data = await response.json();
       setFeatherInsight(prev => ({
         ...prev,
-        activities: data.activities || [],
         sortedWeakQualities: data.sortedWeakQualities || [],
         sortedStrongQualities: data.sortedStrongQualities || [],
         roles: data.roles || [],
-        money: data.money || [],
+        capitalizeAdvice: data.capitalizeAdvice || [],
         hobbies: data.hobbies || [],
         celebrities: data.celebrities || [],
       }));
@@ -133,7 +129,7 @@ export default function Home() {
   const handleRestart = () => {
     setSituations([]);
     setCurrentSituationIndex(0);
-    setFeatherInsight({ summary: '', feathers: [], uniqueActions: [], activities: [] });
+    setFeatherInsight({ summary: '', feathers: [], activities: [] });
     setQualityRatings([]);
     setStep('intro');
   };

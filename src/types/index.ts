@@ -30,19 +30,18 @@ export interface FeatherInsight {
   summary: string;
   feathers: string[];
   feathersStructured?: {
-    moment: string[];
-    mindset: string[];
-    regular: string[];
+    stopCrane: string[];
+    mantra: string[];
+    ritual: string[];
   };
-  uniqueActions: string[];
   activities: string[];
-  // New structured activities data
+  // Structured activities data
   sortedWeakQualities?: string[];
   sortedStrongQualities?: string[];
-  roles?: { role: string; type: string; income: string }[];
-  money?: { opportunity: string; probability: number; whyEasy?: string }[];
+  roles?: { role: string; type: string; whyComfortable: string }[];
+  capitalizeAdvice?: { advice: string; explanation: string }[];
   hobbies?: string[];
-  celebrities?: { name: string; description: string; wikiId: string }[] | string[];
+  celebrities?: { name: string; description: string; imageQuery: string }[] | string[];
 }
 
 export type AppStep = 'intro' | 'input' | 'processing' | 'results';
