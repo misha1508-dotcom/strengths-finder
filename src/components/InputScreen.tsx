@@ -86,6 +86,53 @@ export default function InputScreen({
           </p>
         </div>
 
+        {/* Examples of situations */}
+        <details className="bg-[var(--card-bg)] rounded-xl border border-[var(--mint)]/30 overflow-hidden">
+          <summary className="px-4 py-3 cursor-pointer text-sm font-medium text-[var(--accent)] hover:bg-[var(--mint)]/10 transition-colors flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Примеры ситуаций (нажми, чтобы раскрыть)
+          </summary>
+          <div className="px-4 pb-4 space-y-3 text-sm text-[var(--muted)]">
+            <div>
+              <span className="font-medium text-foreground">💸 Деньги:</span>
+              <ul className="mt-1 space-y-1 pl-4">
+                <li>• Взял кредит на товар, который не продался. Платил год, пришлось продать машину</li>
+                <li>• Получил крупную сумму в подарок, мог вложить — но спустил всё за пару месяцев</li>
+                <li>• Одолжил другу деньги, он не вернул. Отношения испортились, денег нет</li>
+              </ul>
+            </div>
+            <div>
+              <span className="font-medium text-foreground">💼 Работа/бизнес:</span>
+              <ul className="mt-1 space-y-1 pl-4">
+                <li>• Запустил проект, не сделал бэкапы — потерял все данные клиентов</li>
+                <li>• Не подготовился к важной презентации, провалился перед руководством</li>
+                <li>• Уволился на эмоциях, потом полгода не мог найти работу</li>
+              </ul>
+            </div>
+            <div>
+              <span className="font-medium text-foreground">💔 Отношения:</span>
+              <ul className="mt-1 space-y-1 pl-4">
+                <li>• Поссорился с близким человеком из-за мелочи, не извинился — потерял друга</li>
+                <li>• Игнорировал проблемы в отношениях, пока партнёр не ушёл</li>
+                <li>• Пообещал помочь родителям и забыл — до сих пор стыдно</li>
+              </ul>
+            </div>
+            <div>
+              <span className="font-medium text-foreground">🎯 Другое:</span>
+              <ul className="mt-1 space-y-1 pl-4">
+                <li>• Откладывал поход к врачу, пока небольшая проблема не стала серьёзной</li>
+                <li>• Не пошёл на собеседование мечты, потому что испугался</li>
+                <li>• Доверился мошенникам, хотя интуиция говорила не делать этого</li>
+              </ul>
+            </div>
+            <p className="text-xs italic pt-2 border-t border-[var(--mint)]/20">
+              Пиши своими словами, как чувствуешь. Чем честнее — тем точнее анализ.
+            </p>
+          </div>
+        </details>
+
         {/* Counter and Navigation */}
         <div className="flex items-center justify-between">
           <button
@@ -135,10 +182,6 @@ export default function InputScreen({
               className="w-full h-40 p-4 bg-background border border-[var(--mint)]/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-foreground placeholder-[var(--muted)]"
             />
 
-            {/* Hint */}
-            <p className="text-sm text-center text-[var(--muted)] italic">
-              Рассказывай, как будто жалуешься маме, папе, подруге или другу. Можно ныть.
-            </p>
 
             {/* Character count */}
             <div className="text-right text-sm text-[var(--muted)]">
