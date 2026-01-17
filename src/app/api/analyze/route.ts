@@ -39,6 +39,42 @@ async function callOpenRouter(prompt: string, maxTokens: number = 4096) {
   return textContent;
 }
 
+// Helper function to safely parse JSON with cleanup
+function safeParseJSON(text: string): unknown {
+  // Extract JSON from the response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('No JSON found in response');
+  }
+
+  let jsonStr = jsonMatch[0];
+
+  // Clean up common issues
+  // Remove trailing commas before ] or }
+  jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+
+  // Fix unescaped quotes inside strings (basic attempt)
+  // Replace problematic patterns
+
+  try {
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    console.error('JSON parse error, attempting cleanup:', e);
+    console.error('Original JSON:', jsonStr.substring(0, 500));
+
+    // More aggressive cleanup
+    // Try to fix common issues with explanations containing quotes
+    jsonStr = jsonStr.replace(/"explanation":\s*"([^"]*)"([^,}\]]*)"([^,}\]]*)/g, '"explanation": "$1$2$3"');
+
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e2) {
+      console.error('JSON parse still failed:', e2);
+      throw new Error('Failed to parse AI response as JSON');
+    }
+  }
+}
+
 const QUALITIES_LIST = `
 Эмоциональные качества (emotional):
 Впечатлительность, Ранимость, Обидчивость, Вспыльчивость, Спокойствие, Завистливость, Злопамятность, Щедрость, Жадность, Мстительность, Доброжелательность, Циничность
@@ -113,12 +149,7 @@ ${situations.map((s: string, i: number) => `${i + 1}. ${s}`).join('\n\n')}
 
     const textContent = await callOpenRouter(prompt, 4096);
 
-    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No JSON found in response');
-    }
-
-    const analysisResult = JSON.parse(jsonMatch[0]);
+    const analysisResult = safeParseJSON(textContent);
 
     return NextResponse.json(analysisResult);
   } catch (error) {
@@ -173,12 +204,9 @@ ${dualsSummary}
 
   const textContent = await callOpenRouter(prompt, 2048);
 
-  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('No JSON found in response');
-  }
+  const result = safeParseJSON(textContent);
 
-  return NextResponse.json(JSON.parse(jsonMatch[0]));
+  return NextResponse.json(result);
 }
 
 async function handleActivities(situations: { text: string; analysis: { qualities: { name: string }[]; duals: { quality: string; positive: string }[] } }[]) {
@@ -251,10 +279,7 @@ async function handleActivities(situations: { text: string; analysis: { qualitie
 
   const textContent = await callOpenRouter(prompt, 4096);
 
-  const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('No JSON found in response');
-  }
+  const result = safeParseJSON(textContent);
 
-  return NextResponse.json(JSON.parse(jsonMatch[0]));
+  return NextResponse.json(result);
 }

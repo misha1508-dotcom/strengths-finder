@@ -7,35 +7,61 @@ interface ProcessingScreenProps {
   onComplete?: () => void;
 }
 
+// Duration is cumulative percentage, pauseMs is extra delay at this stage
 const STAGES = [
-  { id: 1, text: 'Подключаюсь к серверу...', duration: 0.05 },
-  { id: 2, text: 'Отправка данных в ФСБ... шутка 😄', duration: 0.1 },
-  { id: 3, text: 'Передаю ситуации на анализ...', duration: 0.15 },
-  { id: 4, text: 'ИИ читает твои истории...', duration: 0.25 },
-  { id: 5, text: 'Определяю проявленные качества...', duration: 0.45 },
-  { id: 6, text: 'Нахожу позитивные дуалы...', duration: 0.65 },
-  { id: 7, text: 'Считаю частоту качеств...', duration: 0.8 },
-  { id: 8, text: 'Формирую результаты...', duration: 0.9 },
-  { id: 9, text: 'Анализ готов! ✨', duration: 1.0 },
+  { id: 1, text: 'Подключаюсь к серверу...', duration: 0.03, pauseMs: 0 },
+  { id: 2, text: 'Отправка данных в ФСБ... шутка 😄', duration: 0.08, pauseMs: 3000 },
+  { id: 3, text: 'Передаю ситуации на анализ...', duration: 0.15, pauseMs: 0 },
+  { id: 4, text: 'ИИ читает твои истории...', duration: 0.30, pauseMs: 0 },
+  { id: 5, text: 'Определяю проявленные качества...', duration: 0.50, pauseMs: 0 },
+  { id: 6, text: 'Нахожу позитивные дуалы...', duration: 0.70, pauseMs: 0 },
+  { id: 7, text: 'Считаю частоту качеств...', duration: 0.85, pauseMs: 0 },
+  { id: 8, text: 'Формирую результаты...', duration: 0.95, pauseMs: 0 },
+  { id: 9, text: 'Анализ готов! ✨', duration: 1.0, pauseMs: 0 },
 ];
 
 export default function ProcessingScreen({ situationsCount }: ProcessingScreenProps) {
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(STAGES[0]);
-  const [startTime] = useState(Date.now());
+  const [isPaused, setIsPaused] = useState(false);
+  const [pauseEndTime, setPauseEndTime] = useState<number | null>(null);
+  const [adjustedStartTime, setAdjustedStartTime] = useState(Date.now());
+  const [totalPauseTime, setTotalPauseTime] = useState(0);
 
   // Estimate based on situations count (more situations = longer analysis)
   const estimatedDuration = Math.max(8000, situationsCount * 2000); // min 8s, +2s per situation
 
   const updateProgress = useCallback(() => {
-    const elapsed = Date.now() - startTime;
-    const rawProgress = Math.min(elapsed / estimatedDuration, 0.95); // Cap at 95% until real completion
+    const now = Date.now();
+
+    // Handle pause
+    if (isPaused && pauseEndTime) {
+      if (now >= pauseEndTime) {
+        // Pause ended
+        setIsPaused(false);
+        setPauseEndTime(null);
+      } else {
+        // Still paused - don't update progress
+        return;
+      }
+    }
+
+    const elapsed = now - adjustedStartTime - totalPauseTime;
+    const rawProgress = Math.min(elapsed / estimatedDuration, 0.95);
 
     // Find current stage
     const stage = STAGES.find(s => rawProgress <= s.duration) || STAGES[STAGES.length - 1];
+
+    // Check if we need to pause at this stage
+    if (stage.pauseMs > 0 && currentStage.id !== stage.id && !isPaused) {
+      setIsPaused(true);
+      setPauseEndTime(now + stage.pauseMs);
+      setTotalPauseTime(prev => prev + stage.pauseMs);
+    }
+
     setCurrentStage(stage);
     setProgress(rawProgress * 100);
-  }, [startTime, estimatedDuration]);
+  }, [adjustedStartTime, estimatedDuration, isPaused, pauseEndTime, currentStage.id, totalPauseTime]);
 
   useEffect(() => {
     const interval = setInterval(updateProgress, 100);
@@ -43,8 +69,8 @@ export default function ProcessingScreen({ situationsCount }: ProcessingScreenPr
   }, [updateProgress]);
 
   // Calculate remaining time estimate
-  const elapsed = Date.now() - startTime;
-  const remaining = Math.max(0, Math.ceil((estimatedDuration - elapsed) / 1000));
+  const elapsed = Date.now() - adjustedStartTime;
+  const remaining = Math.max(0, Math.ceil((estimatedDuration + totalPauseTime - elapsed) / 1000));
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 fade-in">
