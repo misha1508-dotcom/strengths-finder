@@ -10,6 +10,7 @@ import ResultsScreen from '@/components/ResultsScreen';
 export default function Home() {
   const [step, setStep] = useState<AppStep>('intro');
   const [situations, setSituations] = useState<Situation[]>([]);
+  const [currentSituationIndex, setCurrentSituationIndex] = useState(0);
   const [featherInsight, setFeatherInsight] = useState<FeatherInsight>({
     summary: '',
     feathers: [],
@@ -23,12 +24,22 @@ export default function Home() {
     setStep('input');
   };
 
-  const handleSituationAdd = (text: string) => {
-    const newSituation: Situation = {
-      id: situations.length + 1,
-      text,
-    };
-    setSituations([...situations, newSituation]);
+  const handleSituationSave = (text: string, index: number) => {
+    setSituations(prev => {
+      const newSituations = [...prev];
+      if (index < newSituations.length) {
+        // Update existing situation
+        newSituations[index] = { ...newSituations[index], text };
+      } else {
+        // Add new situation
+        newSituations.push({ id: index + 1, text });
+      }
+      return newSituations;
+    });
+  };
+
+  const handleNavigate = (index: number) => {
+    setCurrentSituationIndex(index);
   };
 
   const handleAllSituationsComplete = async () => {
@@ -83,6 +94,7 @@ export default function Home() {
       setFeatherInsight(prev => ({
         ...prev,
         feathers: data.feathers || [],
+        feathersStructured: data.feathersStructured,
         uniqueActions: data.uniqueActions || [],
       }));
     } catch (error) {
@@ -111,6 +123,7 @@ export default function Home() {
         roles: data.roles || [],
         money: data.money || [],
         hobbies: data.hobbies || [],
+        celebrities: data.celebrities || [],
       }));
     } catch (error) {
       console.error('Error getting activities:', error);
@@ -119,6 +132,7 @@ export default function Home() {
 
   const handleRestart = () => {
     setSituations([]);
+    setCurrentSituationIndex(0);
     setFeatherInsight({ summary: '', feathers: [], uniqueActions: [], activities: [] });
     setQualityRatings([]);
     setStep('intro');
@@ -140,9 +154,10 @@ export default function Home() {
             </div>
           )}
           <InputScreen
-            currentSituation={situations.length + 1}
-            totalSituations={10}
-            onSituationAdd={handleSituationAdd}
+            situations={situations}
+            currentIndex={currentSituationIndex}
+            onSituationSave={handleSituationSave}
+            onNavigate={handleNavigate}
             onComplete={handleAllSituationsComplete}
             canComplete={situations.length >= 2}
             onBack={handleBack}
