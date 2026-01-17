@@ -89,9 +89,45 @@ const QUALITIES_LIST = `
 Решительность, Упрямство, Трусость, Смелость, Самоуверенность, Осторожность, Прямолинейность, Лицемерие, Терпимость, Нетерпимость, Амбициозность, Инфантильность, Авторитарность
 `;
 
+// Simple in-memory rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 10; // max requests per window
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
+
 export async function POST(request: Request) {
   try {
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Слишком много запросов. Подождите минуту.' },
+        { status: 429 }
+      );
+    }
+
     const { situations, action } = await request.json();
+
+    // Combined feathers + activities for token efficiency
+    if (action === 'feathersAndActivities') {
+      return handleFeathersAndActivities(situations);
+    }
 
     if (action === 'feathers') {
       return handleFeathers(situations);
@@ -326,4 +362,128 @@ async function handleActivities(situations: { text: string; analysis: { qualitie
   const result = safeParseJSON(textContent);
 
   return NextResponse.json(result);
+}
+
+// Combined handler for feathers + activities (saves ~30-40% tokens)
+async function handleFeathersAndActivities(situations: { text: string; analysis: { qualities: { name: string }[]; duals: { quality: string; positive: string }[] } }[]) {
+  const qualitiesSummary = situations
+    .flatMap(s => s.analysis?.qualities.map(q => q.name) || [])
+    .join(', ');
+
+  const dualsSummary = situations
+    .flatMap(s => s.analysis?.duals.map(d => `${d.quality} → ${d.positive}`) || [])
+    .join('\n');
+
+  // Count qualities frequency
+  const qualityCounts: Record<string, number> = {};
+  situations.forEach(s => {
+    s.analysis?.qualities.forEach(q => {
+      qualityCounts[q.name] = (qualityCounts[q.name] || 0) + 1;
+    });
+  });
+  const sortedQualitiesStr = Object.entries(qualityCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name)
+    .join(', ');
+
+  const dualCounts: Record<string, number> = {};
+  situations.forEach(s => {
+    s.analysis?.duals.forEach(d => {
+      dualCounts[d.positive] = (dualCounts[d.positive] || 0) + 1;
+    });
+  });
+  const sortedDualsStr = Object.entries(dualCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name)
+    .join(', ');
+
+  const prompt = `У человека следующие качества: ${qualitiesSummary}
+
+Его дуалы (негативное → позитивное):
+${dualsSummary}
+
+Качества по частоте: ${sortedQualitiesStr}
+Сильные стороны по частоте: ${sortedDualsStr}
+
+Ты — гениальный психотерапевт, стратег поведения и профориентолог. Выполни ДВЕ задачи:
+
+═══════════════════════════════════════
+ЗАДАЧА 1: ПЁРЫШКИ-ПРОТИВОВЕСЫ
+═══════════════════════════════════════
+
+Найди ЭЛЕГАНТНЫЕ микро-решения, которые вызовут реакцию "Вау! Как же просто!"
+
+КРИТЕРИИ: неочевидность, элегантность, конкретность, лёгкость, персонализация.
+
+НЕ ДАВАЙ банальные советы типа "глубокий вдох", "посчитай до 10", "веди дневник", "медитируй".
+
+Предложи 10 МИКРО-ДЕЙСТВИЙ в 3 категориях:
+- В МОМЕНТ (3-4): что делать когда "накрывает"
+- MINDSET (3-4): какую мысль держать в голове
+- РЕГУЛЯРНО (3-4): что делать раз в неделю/месяц
+
+Также 3 УНИКАЛЬНЫХ ДЕЙСТВИЯ — самые неочевидные вещи для этого человека.
+
+═══════════════════════════════════════
+ЗАДАЧА 2: ГДЕ БУДЕТ ЛЕГКО
+═══════════════════════════════════════
+
+Помоги найти, ГДЕ человеку будет ЛЕГКО — где требуется то, что у него уже есть.
+
+Определи:
+1. Топ-3 слабых качества (по частоте)
+2. Топ-3 сильных стороны (по частоте)
+3. 10 РОЛЕЙ где будет легко (role, type: бизнес|работа|фриланс, whyComfortable)
+4. 5 советов как КАПИТАЛИЗИРОВАТЬ качества (advice, explanation)
+5. 5 знаменитостей с похожим типом (имя по-русски — почему похож)
+6. 5 хобби для души (занятие — почему подойдёт)
+
+═══════════════════════════════════════
+
+Ответь СТРОГО в формате JSON:
+{
+  "feathers": {
+    "moment": ["действие 1", "действие 2", "действие 3"],
+    "mindset": ["мысль 1", "мысль 2", "мысль 3"],
+    "regular": ["действие 1", "действие 2", "действие 3"]
+  },
+  "uniqueActions": ["уникальное 1", "уникальное 2", "уникальное 3"],
+  "sortedWeakQualities": ["качество1", "качество2", "качество3"],
+  "sortedStrongQualities": ["сила1", "сила2", "сила3"],
+  "roles": [
+    {"role": "Название роли", "type": "фриланс", "whyComfortable": "Почему легко"}
+  ],
+  "capitalizeAdvice": [
+    {"advice": "Что делать", "explanation": "Почему работает"}
+  ],
+  "celebrities": ["Имя — почему похож"],
+  "hobbies": ["Занятие — почему подойдёт"]
+}
+
+Только JSON, без дополнительного текста.`;
+
+  const textContent = await callOpenRouter(prompt, 4096);
+  const result = safeParseJSON(textContent) as {
+    feathers: { moment: string[]; mindset: string[]; regular: string[] };
+    uniqueActions: string[];
+    sortedWeakQualities: string[];
+    sortedStrongQualities: string[];
+    roles: { role: string; type: string; whyComfortable: string }[];
+    capitalizeAdvice: { advice: string; explanation: string }[];
+    celebrities: string[];
+    hobbies: string[];
+  };
+
+  return NextResponse.json({
+    // Feathers data
+    feathersStructured: result.feathers,
+    uniqueActions: result.uniqueActions,
+    // Activities data
+    sortedWeakQualities: result.sortedWeakQualities,
+    sortedStrongQualities: result.sortedStrongQualities,
+    roles: result.roles,
+    capitalizeAdvice: result.capitalizeAdvice,
+    celebrities: result.celebrities,
+    hobbies: result.hobbies,
+  });
 }

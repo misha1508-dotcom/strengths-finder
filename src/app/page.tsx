@@ -86,7 +86,8 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get feathers');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to get feathers');
       }
 
       const data = await response.json();
@@ -97,6 +98,41 @@ export default function Home() {
       }));
     } catch (error) {
       console.error('Error getting feathers:', error);
+      setError(error instanceof Error ? error.message : 'Ошибка при получении рекомендаций');
+    }
+  };
+
+  // Combined call for feathers + activities (saves tokens)
+  const handleGetFeathersAndActivities = async () => {
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ situations, action: 'feathersAndActivities' }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to get recommendations');
+      }
+
+      const data = await response.json();
+      setFeatherInsight(prev => ({
+        ...prev,
+        feathersStructured: data.feathersStructured,
+        uniqueActions: data.uniqueActions,
+        sortedWeakQualities: data.sortedWeakQualities || [],
+        sortedStrongQualities: data.sortedStrongQualities || [],
+        roles: data.roles || [],
+        capitalizeAdvice: data.capitalizeAdvice || [],
+        hobbies: data.hobbies || [],
+        celebrities: data.celebrities || [],
+      }));
+      return data;
+    } catch (error) {
+      console.error('Error getting recommendations:', error);
+      setError(error instanceof Error ? error.message : 'Ошибка при получении рекомендаций');
+      throw error;
     }
   };
 
@@ -109,7 +145,8 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get activities');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to get activities');
       }
 
       const data = await response.json();
@@ -124,6 +161,7 @@ export default function Home() {
       }));
     } catch (error) {
       console.error('Error getting activities:', error);
+      setError(error instanceof Error ? error.message : 'Ошибка при получении активностей');
     }
   };
 
@@ -174,6 +212,7 @@ export default function Home() {
           onRestart={handleRestart}
           onGetFeathers={handleGetFeathers}
           onGetActivities={handleGetActivities}
+          onGetFeathersAndActivities={handleGetFeathersAndActivities}
         />
       )}
     </main>

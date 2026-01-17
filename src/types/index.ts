@@ -27,15 +27,17 @@ export interface QualityRating {
 }
 
 export interface FeatherInsight {
+  // Legacy fields (kept for backwards compatibility)
   summary: string;
   feathers: string[];
+  activities: string[];
+  // Structured feathers data
   feathersStructured?: {
     moment: string[];
     mindset: string[];
     regular: string[];
   };
   uniqueActions?: string[];
-  activities: string[];
   // Structured activities data
   sortedWeakQualities?: string[];
   sortedStrongQualities?: string[];

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Situation, FeatherInsight, QualityRating } from '@/types';
 
 interface ResultsScreenProps {
@@ -10,6 +10,7 @@ interface ResultsScreenProps {
   onRestart: () => void;
   onGetFeathers: () => Promise<void>;
   onGetActivities: () => Promise<void>;
+  onGetFeathersAndActivities: () => Promise<unknown>;
 }
 
 export default function ResultsScreen({
@@ -19,6 +20,7 @@ export default function ResultsScreen({
   onRestart,
   onGetFeathers,
   onGetActivities,
+  onGetFeathersAndActivities,
 }: ResultsScreenProps) {
   const [expandedSituation, setExpandedSituation] = useState<number | null>(null);
   const [showFeathers, setShowFeathers] = useState(false);
@@ -27,18 +29,29 @@ export default function ResultsScreen({
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Use combined call to save tokens - loads both feathers and activities at once
   const handleGetFeathers = async () => {
     setLoadingFeathers(true);
-    await onGetFeathers();
+    try {
+      await onGetFeathersAndActivities();
+      setShowFeathers(true);
+      setShowActivities(true); // Both loaded at once
+    } catch {
+      // Error already handled in parent
+    }
     setLoadingFeathers(false);
-    setShowFeathers(true);
   };
 
+  // Fallback for activities if needed separately
   const handleGetActivities = async () => {
     setLoadingActivities(true);
-    await onGetActivities();
+    try {
+      await onGetActivities();
+      setShowActivities(true);
+    } catch {
+      // Error already handled in parent
+    }
     setLoadingActivities(false);
-    setShowActivities(true);
   };
 
   const getCategoryLabel = (category: string) => {
@@ -51,8 +64,8 @@ export default function ResultsScreen({
     return labels[category] || category;
   };
 
-  // Generate the summary prompt for copying
-  const generatePrompt = () => {
+  // Generate the summary prompt for copying (memoized for performance)
+  const generatedPrompt = useMemo(() => {
     const allQualities = situations.flatMap(s => s.analysis?.qualities.map(q => q.name) || []);
     const uniqueQualities = [...new Set(allQualities)];
     const allDuals = situations.flatMap(s => s.analysis?.duals.map(d => d.positive) || []);
@@ -126,28 +139,27 @@ export default function ResultsScreen({
     prompt += `\nПомоги мне разобраться с этой информацией и дай рекомендации.`;
 
     return prompt;
-  };
+  }, [situations, qualityRatings, featherInsight]);
 
-  const handleCopyPrompt = async () => {
-    const prompt = generatePrompt();
+  const handleCopyPrompt = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(prompt);
+      await navigator.clipboard.writeText(generatedPrompt);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
-  };
+  }, [generatedPrompt]);
 
   // Get max count for progress bar calculation
   const maxCount = qualityRatings.length > 0 ? Math.max(...qualityRatings.map(r => r.count)) : 1;
 
   return (
-    <div className="min-h-screen px-6 py-12 fade-in">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen px-6 py-12">
+      <div className="max-w-6xl mx-auto space-y-8 stagger-fade-in">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+          <h1 className="text-3xl md:text-4xl font-bold gradient-text">
             Анализ сильных и слабых сторон
           </h1>
           <p className="text-[var(--muted)]">
@@ -253,7 +265,7 @@ export default function ResultsScreen({
                 </div>
                 <div className="h-2 bg-[var(--mint)]/20 rounded-full overflow-hidden ml-11">
                   <div
-                    className="h-full bg-gradient-to-r from-red-400 to-red-600 dark:from-red-500 dark:to-red-700 rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-red-400 to-red-600 dark:from-red-500 dark:to-red-700 rounded-full progress-animated"
                     style={{ width: `${(rating.count / maxCount) * 100}%` }}
                   />
                 </div>
@@ -405,28 +417,7 @@ export default function ResultsScreen({
               </div>
             )}
 
-            {/* Continue button */}
-            {!showActivities && (
-              <div className="mt-8 text-center">
-                <button
-                  onClick={handleGetActivities}
-                  disabled={loadingActivities}
-                  className="px-10 py-4 bg-[var(--accent)] hover:bg-[var(--accent-light)] disabled:bg-[var(--muted)]/30 text-white font-semibold rounded-full text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
-                >
-                  {loadingActivities ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Подбираю занятия...
-                    </span>
-                  ) : (
-                    'Пойти ещё дальше →'
-                  )}
-                </button>
-              </div>
-            )}
+            {/* Continue button - hidden since we load everything at once now */}
           </div>
         )}
 
@@ -485,7 +476,7 @@ export default function ResultsScreen({
                 </p>
                 <div className="space-y-3">
                   {featherInsight.roles.map((role, index) => (
-                    <div key={index} className="bg-[var(--card-bg)] p-4 rounded-xl border border-[var(--mint)]/30">
+                    <div key={index} className="bg-[var(--card-bg)] p-4 rounded-xl border border-[var(--mint)]/30 hover-lift">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <p className="font-semibold text-foreground">{role.role}</p>
@@ -520,7 +511,7 @@ export default function ResultsScreen({
                 </p>
                 <div className="space-y-3">
                   {featherInsight.capitalizeAdvice.map((item, index) => (
-                    <div key={index} className="bg-[var(--card-bg)] p-5 rounded-xl border-2 border-[var(--accent)]/30">
+                    <div key={index} className="bg-[var(--card-bg)] p-5 rounded-xl border-2 border-[var(--accent)]/30 hover-lift">
                       <p className="font-semibold text-foreground text-lg mb-2">{item.advice}</p>
                       <p className="text-sm text-[var(--muted)]">{item.explanation}</p>
                     </div>
@@ -616,7 +607,7 @@ export default function ResultsScreen({
                 <p className="text-sm text-[var(--muted)] mb-2">Что будет скопировано:</p>
                 <div className="bg-background p-4 rounded-xl border border-[var(--mint)]/30 max-h-48 overflow-y-auto">
                   <pre className="text-xs text-[var(--muted)] whitespace-pre-wrap font-mono">
-                    {generatePrompt()}
+                    {generatedPrompt}
                   </pre>
                 </div>
               </div>
@@ -626,29 +617,48 @@ export default function ResultsScreen({
 
         {/* Contact and Final Message */}
         {showActivities && (
-          <div className="text-center space-y-6 py-6">
-            <p className="text-[var(--muted)]">
-              Надеюсь, было полезно!
-            </p>
-            <p className="text-[var(--muted)]">
-              Мой контакт в телеграм: <a href="https://t.me/krechet_mike" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:text-[var(--accent-light)] font-medium">@krechet_mike</a>
-            </p>
+          <div className="space-y-6 py-6">
+            {/* Feedback CTA - prominent */}
+            <div className="bg-gradient-to-r from-[var(--accent)]/10 to-[var(--accent-light)]/10 rounded-2xl p-6 border border-[var(--accent)]/30">
+              <div className="text-center space-y-4">
+                <h3 className="text-xl font-semibold text-foreground">
+                  Понравился результат?
+                </h3>
+                <p className="text-[var(--muted)] max-w-md mx-auto">
+                  Напиши мне в телеграм — расскажи, что зацепило, что было полезно, а что можно улучшить.
+                  Мне правда интересно!
+                </p>
+                <a
+                  href="https://t.me/krechet_mike"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full text-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                  </svg>
+                  Написать отзыв @krechet_mike
+                </a>
+              </div>
+            </div>
 
             {/* Donation button */}
-            <div className="pt-4 border-t border-[var(--mint)]/30">
-              <p className="text-[var(--muted)] mb-4">
-                Если есть желание отблагодарить и было реально полезно:
-              </p>
-              <div className="flex justify-center">
-                <iframe
-                  src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1FB7C5Q525D.260117&"
-                  width="330"
-                  height="50"
-                  frameBorder="0"
-                  allowTransparency={true}
-                  scrolling="no"
-                  title="Donate"
-                />
+            <div className="bg-[var(--card-bg)] rounded-2xl p-6 border border-[var(--mint)]/30">
+              <div className="text-center space-y-4">
+                <p className="text-[var(--muted)]">
+                  Если было реально полезно и хочется поддержать проект:
+                </p>
+                <div className="flex justify-center">
+                  <iframe
+                    src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1FB7C5Q525D.260117&"
+                    width="330"
+                    height="50"
+                    frameBorder="0"
+                    allowTransparency={true}
+                    scrolling="no"
+                    title="Donate"
+                  />
+                </div>
               </div>
             </div>
           </div>

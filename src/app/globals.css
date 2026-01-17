@@ -107,3 +107,105 @@ body {
 .card-reveal {
   animation: cardReveal 0.4s ease-out;
 }
+
+/* Staggered fade in for lists */
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-fade-in > * {
+  opacity: 0;
+  animation: staggerFadeIn 0.5s ease-out forwards;
+}
+
+.stagger-fade-in > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-fade-in > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-fade-in > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-fade-in > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-fade-in > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-fade-in > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-fade-in > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-fade-in > *:nth-child(8) { animation-delay: 0.4s; }
+.stagger-fade-in > *:nth-child(9) { animation-delay: 0.45s; }
+.stagger-fade-in > *:nth-child(10) { animation-delay: 0.5s; }
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Progress bar animation */
+@keyframes progressGrow {
+  from {
+    width: 0%;
+  }
+}
+
+.progress-animated {
+  animation: progressGrow 1s ease-out;
+}
