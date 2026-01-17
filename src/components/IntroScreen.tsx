@@ -82,7 +82,7 @@ export default function IntroScreen({ onStart }: IntroScreenProps) {
             <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--mint)]/30">
               <div className="text-2xl font-bold text-[var(--accent)] mb-2">1</div>
               <p className="text-sm text-[var(--muted)]">
-                Расскажи о 5-10 ситуациях, где что-то пошло не так
+                Выпиши тезисно 8-10-15 ситуаций где ты чувствуешь, что это был провал. Честно
               </p>
             </div>
             <div className="bg-[var(--card-bg)] rounded-xl p-5 border border-[var(--mint)]/30">

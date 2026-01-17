@@ -13,7 +13,6 @@ interface InputScreenProps {
 
 export default function InputScreen({
   currentSituation,
-  totalSituations,
   onSituationAdd,
   onComplete,
   canComplete,
@@ -29,19 +28,11 @@ export default function InputScreen({
     textareaRef.current?.focus();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.metaKey) {
-      handleSubmit();
-    }
-  };
-
   const situationsDone = currentSituation - 1;
-  const progressPercent = (situationsDone / totalSituations) * 100;
-  const canSkipToEnd = situationsDone >= 2;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 fade-in">
-      <div className="w-full max-w-2xl space-y-8">
+      <div className="w-full max-w-2xl space-y-6">
         {/* Back button */}
         <button
           onClick={onBack}
@@ -53,22 +44,20 @@ export default function InputScreen({
           Назад
         </button>
 
-        {/* Progress */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-[var(--muted)]">
-              Ситуация {currentSituation > totalSituations ? totalSituations : currentSituation} из {totalSituations}
-            </span>
-            <span className="text-sm text-[var(--muted)]">
-              {situationsDone} записано
-            </span>
-          </div>
-          <div className="h-2 bg-[var(--mint)]/30 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[var(--accent)] rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+        {/* Guidance text */}
+        <div className="bg-[var(--mint)]/20 rounded-xl p-4 border border-[var(--accent)]/20">
+          <p className="text-sm text-[var(--muted)] leading-relaxed">
+            <strong className="text-foreground">Какие выписывать ситуации:</strong> когда чувствуешь что это был провал:
+            проект провалил, отношения испортил, кто-то обманул, что-то не получилось, травма —
+            в общем везде где было больно.
+          </p>
+        </div>
+
+        {/* Counter */}
+        <div className="text-center">
+          <span className="text-lg font-semibold text-[var(--accent)]">
+            {situationsDone} {situationsDone === 1 ? 'ситуация записана' : situationsDone < 5 ? 'ситуации записано' : 'ситуаций записано'}
+          </span>
         </div>
 
         {/* Main Input Area */}
@@ -76,7 +65,7 @@ export default function InputScreen({
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-semibold">
-                Опишите ситуацию
+                Опишите ситуацию #{currentSituation}
               </h2>
               <p className="text-[var(--muted)]">
                 Вспомните момент, когда что-то пошло не так. Что произошло? Кто участвовал? Что вы чувствовали?
@@ -88,7 +77,6 @@ export default function InputScreen({
               ref={textareaRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
               placeholder="Начните писать..."
               className="w-full h-40 p-4 bg-background border border-[var(--mint)]/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-foreground placeholder-[var(--muted)]"
             />
@@ -106,36 +94,31 @@ export default function InputScreen({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col gap-4">
+          {/* Save button - primary action */}
           <button
             onClick={handleSubmit}
-            disabled={text.trim().length < 10 || currentSituation > totalSituations}
-            className="px-8 py-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] disabled:bg-[var(--muted)]/30 disabled:cursor-not-allowed text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100 shadow-lg shadow-[var(--accent)]/20"
+            disabled={text.trim().length < 10}
+            className="w-full px-8 py-4 bg-[var(--card-bg)] border-2 border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)]/10 disabled:border-[var(--muted)]/30 disabled:text-[var(--muted)]/50 disabled:cursor-not-allowed font-semibold rounded-xl transition-all"
           >
-            {currentSituation > totalSituations
-              ? 'Максимум ситуаций'
-              : `Сохранить ситуацию ${currentSituation}`}
+            + Сохранить и добавить ещё ситуацию
           </button>
 
-          {canSkipToEnd && (
+          {/* Go to analysis - clearly different, prominent when available */}
+          {canComplete ? (
             <button
               onClick={onComplete}
-              className="px-8 py-3 bg-[var(--card-bg)] border-2 border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95"
+              className="w-full px-8 py-5 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent)] text-white font-bold rounded-2xl text-lg transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[var(--accent)]/30"
             >
-              Перейти к анализу →
+              🚀 Перейти к анализу →
             </button>
+          ) : (
+            <div className="text-center py-4 px-6 bg-[var(--mint)]/10 rounded-xl border border-dashed border-[var(--muted)]/30">
+              <p className="text-sm text-[var(--muted)]">
+                Добавьте минимум 2 ситуации, чтобы перейти к анализу
+              </p>
+            </div>
           )}
-        </div>
-
-        {!canSkipToEnd && (
-          <p className="text-center text-sm text-[var(--muted)]">
-            Добавьте минимум 2 ситуации, чтобы перейти к анализу
-          </p>
-        )}
-
-        {/* Hint */}
-        <div className="text-center text-sm text-[var(--muted)] space-y-1">
-          <p>Cmd/Ctrl + Enter — быстрое сохранение</p>
         </div>
       </div>
     </div>

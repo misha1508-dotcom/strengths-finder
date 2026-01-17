@@ -29,7 +29,14 @@ export interface QualityRating {
 export interface FeatherInsight {
   summary: string;
   feathers: string[];
+  uniqueActions: string[];
   activities: string[];
+  // New structured activities data
+  sortedWeakQualities?: string[];
+  sortedStrongQualities?: string[];
+  roles?: string[];
+  money?: string[];
+  hobbies?: string[];
 }
 
 export type AppStep = 'intro' | 'input' | 'processing' | 'results';
