@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { Situation, FeatherInsight, QualityRating } from '@/types';
+import { trackEvent } from '@/lib/analytics';
 
 interface ResultsScreenProps {
   situations: Situation[];
@@ -32,10 +33,12 @@ export default function ResultsScreen({
   // Use combined call to save tokens - loads both feathers and activities at once
   const handleGetFeathers = async () => {
     setLoadingFeathers(true);
+    trackEvent('feathers_clicked');
     try {
       await onGetFeathersAndActivities();
       setShowFeathers(true);
       setShowActivities(true); // Both loaded at once
+      trackEvent('activities_clicked');
     } catch {
       // Error already handled in parent
     }
@@ -146,6 +149,7 @@ export default function ResultsScreen({
       await navigator.clipboard.writeText(generatedPrompt);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      trackEvent('copy_clicked');
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -663,6 +667,7 @@ export default function ResultsScreen({
                   href="https://t.me/krechet_mike"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackEvent('telegram_clicked')}
                   className="inline-flex items-center gap-3 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-light)] text-white font-semibold rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[var(--accent)]/30"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

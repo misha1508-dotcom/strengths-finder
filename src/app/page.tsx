@@ -6,6 +6,7 @@ import IntroScreen from '@/components/IntroScreen';
 import InputScreen from '@/components/InputScreen';
 import ProcessingScreen from '@/components/ProcessingScreen';
 import ResultsScreen from '@/components/ResultsScreen';
+import { trackEvent } from '@/lib/analytics';
 
 // localStorage keys
 const STORAGE_KEYS = {
@@ -56,6 +57,9 @@ export default function Home() {
       console.error('Error loading from localStorage:', e);
     }
     setIsHydrated(true);
+
+    // Track page view
+    trackEvent('page_view');
   }, []);
 
   // Save situations to localStorage when they change
@@ -85,6 +89,7 @@ export default function Home() {
 
   const handleStart = () => {
     setStep('input');
+    trackEvent('situation_started');
   };
 
   const handleSituationSave = (text: string, index: number) => {
@@ -97,6 +102,14 @@ export default function Home() {
         // Add new situation
         newSituations.push({ id: index + 1, text });
       }
+
+      // Track situation save
+      trackEvent('situation_saved', {
+        situationIndex: index,
+        situationLength: text.length,
+        situationsCount: newSituations.length,
+      });
+
       return newSituations;
     });
   };
@@ -108,6 +121,11 @@ export default function Home() {
   const handleAllSituationsComplete = async () => {
     setStep('processing');
     setError(null);
+
+    // Track analysis start
+    trackEvent('analysis_started', {
+      situationsCount: situations.length,
+    });
 
     try {
       const response = await fetch('/api/analyze', {
@@ -134,6 +152,11 @@ export default function Home() {
       setSituations(analyzedSituations);
       setQualityRatings(data.qualityRatings || []);
       setStep('results');
+
+      // Track analysis completion
+      trackEvent('analysis_completed', {
+        situationsCount: situations.length,
+      });
     } catch (err) {
       console.error('Error analyzing situations:', err);
       setError(err instanceof Error ? err.message : 'Произошла ошибка при анализе');
